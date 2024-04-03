@@ -1,5 +1,8 @@
 package com.sparta.aa.testframework;
 
+import com.sparta.aa.testframework.lib.pages.HomePage;
+import com.sparta.aa.testframework.lib.pages.PastPage;
+import com.sparta.aa.testframework.lib.pages.SearchPage;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
@@ -81,12 +84,13 @@ public class HackerNewsPomTests {
     public void checkPastLink() {
         // Arrange
         webDriver.get(BASE_URL);
+        HomePage homePage = new HomePage(webDriver);
+
         // Act
-        WebElement pastLink = webDriver.findElement(By.linkText("past"));
-        pastLink.click();
+        PastPage pastPage = homePage.goToPastPage();
         // Assert
-        MatcherAssert.assertThat(webDriver.getCurrentUrl(), Matchers.is("https://news.ycombinator.com/front"));
-        MatcherAssert.assertThat(webDriver.getTitle(), containsString("front"));
+        MatcherAssert.assertThat(pastPage.getUrl(), Matchers.is("https://news.ycombinator.com/front"));
+        MatcherAssert.assertThat(pastPage.getTitle(), containsString("front"));
     }
 
     @Test
@@ -121,9 +125,12 @@ public class HackerNewsPomTests {
         // Arrange
         webDriver.get(BASE_URL);
         // Act
-        webDriver.findElement(By.name("q")).sendKeys("java", Keys.ENTER);
+        HomePage homePage = new HomePage(webDriver);
+        SearchPage searchPage = homePage.searchingPrompt("java");
+
+        System.out.println(searchPage.getCurrentUrl());
         // Assert
-        MatcherAssert.assertThat(webDriver.getCurrentUrl(), Matchers.is("https://hn.algolia.com/?q=java"));
+        MatcherAssert.assertThat(searchPage.getCurrentUrl(), Matchers.is("https://hn.algolia.com/?q=java"));
     }
 
     @Test

@@ -2,6 +2,7 @@ package com.sparta.aa.testframework.lib.pages;
 
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 
 public class HomePage {
@@ -21,4 +22,10 @@ public class HomePage {
         webDriver.findElement(pastLink).click();
         return new PastPage(webDriver);
     }
+
+    public SearchPage searchingPrompt(String prompt) {
+        webDriver.findElement(searchField).sendKeys(prompt, Keys.ENTER);
+        return new SearchPage(webDriver);
+    }
+
 }
