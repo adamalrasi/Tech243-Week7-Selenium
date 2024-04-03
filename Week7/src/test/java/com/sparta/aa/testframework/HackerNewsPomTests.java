@@ -1,4 +1,4 @@
-package com.sparta.aa.simpletests;
+package com.sparta.aa.testframework;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -21,7 +21,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 
-public class HackerNewsTests {
+public class HackerNewsPomTests {
     private static final String DRIVER_LOCATION = "src/test/resources/chromedriver-win64/chromedriver.exe";
 
     private static final String BASE_URL = "https://news.ycombinator.com/";
