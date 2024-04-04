@@ -1,8 +1,6 @@
 package com.sparta.aa.testframework;
 
-import com.sparta.aa.testframework.lib.pages.HomePage;
-import com.sparta.aa.testframework.lib.pages.PastPage;
-import com.sparta.aa.testframework.lib.pages.SearchPage;
+import com.sparta.aa.testframework.lib.pages.*;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
@@ -35,7 +33,7 @@ public class HackerNewsPomTests {
     public static ChromeOptions getChromeOptions() {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--start-maximized");
-        options.addArguments("--headless");
+//        options.addArguments("--headless");
         options.addArguments("--remote-allow-origins=*");
 //        options.setImplicitWaitTimeout(Duration.ofSeconds(10));
         return options;
@@ -75,8 +73,9 @@ public class HackerNewsPomTests {
     @DisplayName("Check that the webdriver works")
     public void checkWebDriver() {
         webDriver.get(BASE_URL);
-        Assertions.assertEquals("https://news.ycombinator.com/", webDriver.getCurrentUrl());
-        Assertions.assertEquals("Hacker News", webDriver.getTitle());
+        HomePage homePage = new HomePage(webDriver);
+        Assertions.assertEquals("https://news.ycombinator.com/", homePage.getCurrentUrl());
+        Assertions.assertEquals("Hacker News", homePage.getTitle());
     }
 
     @Test
@@ -98,12 +97,14 @@ public class HackerNewsPomTests {
     public void checkCommentsLink(){
         // Arrange
         webDriver.get(BASE_URL);
+        HomePage homePage = new HomePage(webDriver);
+
         // Act
-        WebElement commentsLink = webDriver.findElement(By.linkText("comments"));
-        commentsLink.click();
+        CommentsPage commentsPage = homePage.goToCommentsPage();
+
         // Assert
-        MatcherAssert.assertThat(webDriver.getCurrentUrl(), Matchers.is("https://news.ycombinator.com/newcomments"));
-        MatcherAssert.assertThat(webDriver.getTitle(), containsString("New Comments"));
+        MatcherAssert.assertThat(commentsPage.getCurrentUrl(), Matchers.is("https://news.ycombinator.com/newcomments"));
+        MatcherAssert.assertThat(commentsPage.getTitle(), containsString("New Comments"));
     }
 
     @Test
@@ -111,12 +112,14 @@ public class HackerNewsPomTests {
     public void checkAskLink(){
         // Arrange
         webDriver.get(BASE_URL);
+        HomePage homePage = new HomePage(webDriver);
+
         // Act
-        WebElement askLink = webDriver.findElement(By.linkText("ask"));
-        askLink.click();
+        AskPage askPage = homePage.goToAskPage();
+
         // Assert
-        MatcherAssert.assertThat(webDriver.getCurrentUrl(), Matchers.is("https://news.ycombinator.com/ask"));
-        MatcherAssert.assertThat(webDriver.getTitle(), containsString("Ask"));
+        MatcherAssert.assertThat(askPage.getCurrentUrl(), Matchers.is("https://news.ycombinator.com/ask"));
+        MatcherAssert.assertThat(askPage.getTitle(), containsString("Ask"));
     }
 
     @Test
@@ -128,7 +131,6 @@ public class HackerNewsPomTests {
         HomePage homePage = new HomePage(webDriver);
         SearchPage searchPage = homePage.searchingPrompt("java");
 
-        System.out.println(searchPage.getCurrentUrl());
         // Assert
         MatcherAssert.assertThat(searchPage.getCurrentUrl(), Matchers.is("https://hn.algolia.com/?q=java"));
     }
@@ -139,9 +141,9 @@ public class HackerNewsPomTests {
          Wait<WebDriver> webDriverWait = new WebDriverWait(webDriver, Duration.ofSeconds(10));
 
         webDriver.get(BASE_URL);
+        HomePage homePage = new HomePage(webDriver);
+        SearchPage searchPage = homePage.searchingPrompt("Java");
 
-        webDriver.findElement(By.name("q"))
-                .sendKeys("Java", Keys.ENTER);
 
          webDriverWait.until(driver -> driver.getCurrentUrl().contains("/?q=Java"));
 
@@ -158,13 +160,13 @@ public class HackerNewsPomTests {
     public void checkNavBarDate_On_PastPage_Correct() {
         // Arrange
         webDriver.get(BASE_URL);
+        HomePage homePage = new HomePage(webDriver);
         // Act
-        WebElement pastLink = webDriver.findElement(By.linkText("past"));
-        pastLink.click();
+        PastPage pastPage = homePage.goToPastPage();
 
         WebElement navDate = webDriver.findElement(By.xpath("//font"));
         // Assert
-        MatcherAssert.assertThat(webDriver.getTitle(), containsString(navDate.getText()));
+        MatcherAssert.assertThat(pastPage.getTitle(), containsString(navDate.getText()));
     }
 
     @Test
@@ -172,14 +174,14 @@ public class HackerNewsPomTests {
     public void checkDate_Matches_LatestArticleDate() {
         // Arrange
         webDriver.get(BASE_URL);
+        HomePage homePage = new HomePage(webDriver);
         // Act
-        WebElement pastLink = webDriver.findElement(By.linkText("past"));
-        pastLink.click();
+        PastPage pastPage = homePage.goToPastPage();
 
         WebElement latestArticle = webDriver.findElement(By.className("age"));
-        System.out.println(latestArticle.getAttribute("title"));
+
         // Assert
-        MatcherAssert.assertThat(webDriver.getTitle(),
+        MatcherAssert.assertThat(pastPage.getTitle(),
                 containsString(
                         latestArticle.getAttribute("title")
                                 .split("T")[0]));
@@ -202,6 +204,25 @@ public class HackerNewsPomTests {
 
         MatcherAssert.assertThat(topString, containsString(yesterday.toString()));
     }
+
+    @Test
+    @DisplayName("Check that the link to the login page works")
+    public void checkLoginLink() {
+        // Arrange
+        webDriver.get(BASE_URL);
+        HomePage homePage = new HomePage(webDriver);
+
+        // Act
+        LoginPage loginPage = homePage.goToLoginPage();
+        WebElement loginTitle = loginPage.findElement("//b");
+
+
+
+        // Assert
+        MatcherAssert.assertThat(loginPage.getUrl(), Matchers.is("https://news.ycombinator.com/login?goto=news"));
+        MatcherAssert.assertThat(loginTitle.getText(), containsString("Login"));
+    }
+
 
     @Test
     @DisplayName("Attempt invalid login")
@@ -232,6 +253,7 @@ public class HackerNewsPomTests {
         Wait<WebDriver> webDriverWait = new WebDriverWait(webDriver, Duration.ofSeconds(10));
 
         webDriver.get(BASE_URL);
+        HomePage homePage = new HomePage(webDriver);
 
         webDriver.findElement(By.name("q")).sendKeys("java", Keys.ENTER);
 
